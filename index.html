@@ -1,0 +1,1071 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helsuo - 资源管理系统</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Roboto, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: rgba(25, 25, 40, 0.8);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --border-color: rgba(255,255,255,0.1);
+            --accent: #fe2c55;
+            --gradient: linear-gradient(135deg, #fe2c55, #25f4ee);
+            --shadow: 0 8px 32 rgba(0,0,0,0.3);
+            --carousel-btn: rgba(25, 25, 40, 0.6);
+        }
+
+        [data-mode="light"] {
+            --bg-primary: #f8f9fc;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255,255,255,0.9);
+            --text-primary: #1a1a2e;
+            --text-secondary: #647480;
+            --border-color: rgba(0,0,0,0.08);
+            --carousel-btn: rgba(255, 255, 255, 0.7);
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .logo-text {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-box {
+            position: relative;
+            width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 12px;
+        }
+
+        .mode-btn, .func-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .mode-btn:hover, .func-btn:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 24px;
+            padding: 24px;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .sidebar-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .sidebar-item:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .sidebar-item.active {
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .storage {
+            margin-top: auto;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 12px;
+        }
+
+        .storage-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .storage-bar {
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .storage-fill {
+            height: 100%;
+            background: var(--gradient);
+            width: 20%;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+        }
+
+        /* 轮播图样式 */
+        .carousel {
+            width: 100%;
+            height: 360px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+
+        .carousel-item {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            padding: 40px 60px;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.5s ease;
+            cursor: pointer;
+        }
+
+        .carousel-item.active {
+            opacity: 1;
+        }
+
+        .carousel-content {
+            max-width: 600px;
+            pointer-events: none;
+        }
+
+        .carousel-title {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .carousel-desc {
+            font-size: 18px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .carousel-nav {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 2;
+        }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--border-color);
+            cursor: pointer;
+        }
+
+        .carousel-dot.active {
+            background: var(--accent);
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--carousel-btn);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        .prev { left: 24px; }
+        .next { right: 24px; }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+        }
+
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 16px;
+            color: #fff;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-cancel {
+            background: #666;
+            color: #fff;
+        }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .footer {
+            height: 50px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* ==================== 修复：模态框样式增强 ==================== */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 32px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        /* ==================== 修复：文件上传区域样式 ==================== */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            padding: 32px 20px;
+            margin: 16px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent);
+            background: rgba(254, 44, 85, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent);
+            background: rgba(254, 44, 85, 0.1);
+        }
+
+        .upload-area-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-area-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .upload-area-btn {
+            display: inline-block;
+            padding: 10px 24px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 999px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        /* 已选文件列表 */
+        .file-preview-list {
+            margin: 16px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .file-preview-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .file-preview-icon {
+            font-size: 24px;
+        }
+
+        .file-preview-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-preview-name {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-preview-size {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .file-preview-remove {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(254, 44, 85, 0.2);
+            color: var(--accent);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .file-preview-remove:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* 上传进度 */
+        .upload-progress {
+            margin: 16px 0;
+            display: none;
+        }
+
+        .upload-progress.show {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 999px;
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 999px; }
+
+        @media (max-width: 768px) {
+            .main { flex-direction: column; }
+            .sidebar { width: 100%; }
+            .carousel { height: 280px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <div class="navbar">
+        <div class="logo" onclick="loadDashboard()">
+            <div class="logo-icon">🚀</div>
+            <span class="logo-text">Helsuo</span>
+        </div>
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="搜索文件、功能...">
+        </div>
+        <div class="nav-right">
+            <button class="mode-btn" id="modeBtn">🌙</button>
+            <button class="func-btn" onclick="openUpload()">📤</button>
+            <button class="func-btn" onclick="openClean()">🗑️</button>
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="main">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div>
+                <div class="sidebar-title">主导航</div>
+                <div class="sidebar-item active" id="nav-dashboard" onclick="setActive(this);loadDashboard()">📊 仪表盘</div>
+                <div class="sidebar-item" id="nav-files" onclick="setActive(this);loadFiles()">📁 我的文件</div>
+                <div class="sidebar-item" id="nav-favorites" onclick="setActive(this);loadFavorites()">⭐ 我的收藏</div>
+            </div>
+            <div>
+                <div class="sidebar-title">文件分类</div>
+                <div class="sidebar-item" onclick="setActive(this);filterFiles('文档')">📄 文档</div>
+                <div class="sidebar-item" onclick="setActive(this);filterFiles('图片')">🖼️ 图片</div>
+                <div class="sidebar-item" onclick="setActive(this);filterFiles('视频')">🎥 视频</div>
+                <div class="sidebar-item" onclick="setActive(this);filterFiles('压缩包')">📦 压缩包</div>
+                <div class="sidebar-item">
+                    <a href="https://pan.baidu.com/" target="_blank">☁️ 百度网盘</a>
+                </div>
+            </div>
+            <div class="storage">
+                <div class="storage-text">
+                    <span>已使用</span>
+                    <span id="storage-used">2.0GB / 10GB</span>
+                </div>
+                <div class="storage-bar">
+                    <div class="storage-fill" id="storage-fill" style="width: 20%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 内容区 -->
+        <div class="content" id="content-area">
+            <h1>仪表盘</h1>
+            <div class="carousel" id="carousel">
+                <div class="carousel-item active" data-href="resource.html" style="background: linear-gradient(135deg,#0f0f1a,#1a1a2e)">
+                    <div class="carousel-content">
+                        <h2 class="carousel-title">Helsuo 资源中心</h2>
+                        <p class="carousel-desc">企业级云存储解决方案，极简高效的文件管理工具</p>
+                    </div>
+                </div>
+                <div class="carousel-item" data-href="dormitory.html" style="background: linear-gradient(135deg,#252540,#fe2c5533)">
+                    <div class="carousel-content">
+                        <h2 class="carousel-title">宿舍管理系统</h2>
+                        <p class="carousel-desc">智能管理平台，一站式考勤/报修/统计</p>
+                    </div>
+                </div>
+
+                <div class="carousel-nav" onclick="event.stopPropagation()">
+                    <div class="carousel-dot active" onclick="goToSlide(0); event.stopPropagation()"></div>
+                    <div class="carousel-dot" onclick="goToSlide(1); event.stopPropagation()"></div>
+                </div>
+                <button class="carousel-btn prev" onclick="prevSlide(); event.stopPropagation()">←</button>
+                <button class="carousel-btn next" onclick="nextSlide(); event.stopPropagation()">→</button>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <h2>快捷功能</h2>
+                <button class="btn btn-primary" onclick="openUpload()">+ 上传文件</button>
+            </div>
+
+            <div class="card-grid">
+                <div class="card" onclick="openUpload()">
+                    <div class="card-icon">📤</div>
+                    <h3>上传文件</h3>
+                </div>
+                <div class="card" onclick="loadFiles()">
+                    <div class="card-icon">📁</div>
+                    <h3>文件管理</h3>
+                </div>
+                <div class="card" onclick="openClean()">
+                    <div class="card-icon">🗑️</div>
+                    <h3>文件清理</h3>
+                </div>
+            </div>
+
+            <h2>最近文件</h2>
+            <div class="file-list" id="recent-files">
+                <div class="file-item">📄 项目报告.docx</div>
+                <div class="file-item">🖼️ 设计稿.psd</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部版权 -->
+    <div class="footer">
+        © 2026 Helsuo 资源管理系统版权所有 | 保留所有权利
+    </div>
+
+    <!-- ==================== 修复：上传模态框 - 全新设计 ==================== -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <h3>📤 上传文件</h3>
+            
+            <!-- 拖拽上传区域 -->
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-area-icon">📂</div>
+                <div class="upload-area-text">
+                    拖拽文件到此处，或点击选择文件
+                </div>
+                <label class="upload-area-btn">
+                    选择文件
+                    <input type="file" class="upload-input" id="fileInput" multiple>
+                </label>
+            </div>
+            
+            <!-- 已选文件列表 -->
+            <div class="file-preview-list" id="filePreviewList"></div>
+            
+            <!-- 上传进度 -->
+            <div class="upload-progress" id="uploadProgress">
+                <div class="progress-text">上传中... <span id="progressPercent">0%</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            
+            <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+            <button class="btn btn-primary" id="confirmUploadBtn" onclick="confirmUpload()">确认上传</button>
+        </div>
+    </div>
+
+    <div class="modal" id="cleanModal">
+        <div class="modal-content">
+            <h3>🗑️ 文件清理</h3>
+            <p style="margin:20px 0">确认清理冗余文件？</p>
+            <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+            <button class="btn btn-primary" onclick="closeModal()">确认清理</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 核心修复：保存仪表盘原始内容 ====================
+        let dashboardHTML = '';
+        let carouselIndex = 0;
+        let carouselInterval = null;
+        let selectedFiles = [];
+        let recentFilesData = [
+            { name: '项目报告.docx', icon: '📄', size: '2.5 MB' },
+            { name: '设计稿.psd', icon: '🖼️', size: '15.8 MB' }
+        ];
+        const root = document.documentElement;
+
+        // 页面加载完成后保存仪表盘内容
+        window.onload = function() {
+            const contentArea = document.getElementById('content-area');
+            dashboardHTML = contentArea.innerHTML;
+            
+            const mode = localStorage.getItem('mode') || 'dark';
+            root.setAttribute('data-mode', mode);
+            document.getElementById('modeBtn').textContent = mode === 'dark' ? '☀️' : '🌙';
+            
+            initCarousel();
+            startCarouselAutoPlay();
+            initUploadModal();
+        };
+
+        // ==================== 轮播图逻辑 ====================
+        function initCarousel() {
+            const slides = document.querySelectorAll('.carousel-item');
+            const dots = document.querySelectorAll('.carousel-dot');
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === carouselIndex);
+                if (dots[i]) dots[i].classList.toggle('active', i === carouselIndex);
+            });
+        }
+
+        function startCarouselAutoPlay() {
+            if (carouselInterval) clearInterval(carouselInterval);
+            carouselInterval = setInterval(nextSlide, 10000);
+        }
+
+        function nextSlide() {
+            const slides = document.querySelectorAll('.carousel-item');
+            carouselIndex = (carouselIndex + 1) % slides.length;
+            initCarousel();
+        }
+
+        function prevSlide() {
+            const slides = document.querySelectorAll('.carousel-item');
+            carouselIndex = (carouselIndex - 1 + slides.length) % slides.length;
+            initCarousel();
+        }
+
+        function goToSlide(index) {
+            carouselIndex = index;
+            initCarousel();
+        }
+
+        // 轮播图点击跳转（事件委托）
+        document.addEventListener('click', function(e) {
+            const carousel = e.target.closest('.carousel');
+            if (!carousel) return;
+            if (e.target.closest('.carousel-nav') || e.target.closest('.carousel-btn')) return;
+            
+            const slides = carousel.querySelectorAll('.carousel-item');
+            const activeSlide = slides[carouselIndex];
+            if (activeSlide) {
+                const href = activeSlide.getAttribute('data-href');
+                if (href) window.open(href, '_blank');
+            }
+        });
+
+        // ==================== 侧边栏高亮 ====================
+        function setActive(el) {
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // ==================== 页面切换功能 ====================
+        
+        function loadDashboard() {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = dashboardHTML;
+            setActive(document.getElementById('nav-dashboard'));
+            carouselIndex = 0;
+            initCarousel();
+            startCarouselAutoPlay();
+            // 重新绑定最近文件列表
+            updateRecentFilesDisplay();
+        }
+
+        function loadFiles() {
+            const contentArea = document.getElementById('content-area');
+            let filesHtml = recentFilesData.map(f => `
+                <div class="file-item">
+                    <span>${f.icon}</span>
+                    <div style="flex:1">
+                        <div>${f.name}</div>
+                        <div style="font-size:12px;color:var(--text-secondary)">${f.size}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            contentArea.innerHTML = `
+                <h1>我的文件</h1>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                    <p style="color:var(--text-secondary)">共 ${recentFilesData.length} 个文件</p>
+                    <button class="btn btn-primary" onclick="openUpload()">+ 上传文件</button>
+                </div>
+                <div class="file-list">${filesHtml}</div>
+            `;
+        }
+
+        function loadFavorites() {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = `
+                <h1>我的收藏</h1>
+                <div class="file-list">
+                    <div class="file-item">
+                        <span>⭐</span>
+                        <div style="flex:1">
+                            <div>收藏文件示例</div>
+                            <div style="font-size:12px;color:var(--text-secondary)">暂无收藏内容</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterFiles(type) {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = `
+                <h1>${type} 文件</h1>
+                <div class="file-list">
+                    <div class="file-item">
+                        <span>📁</span>
+                        <div style="flex:1">
+                            <div>${type} 分类</div>
+                            <div style="font-size:12px;color:var(--text-secondary)">筛选结果将显示在这里</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==================== 昼夜模式 ====================
+        document.getElementById('modeBtn').onclick = function() {
+            const mode = root.getAttribute('data-mode') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-mode', mode);
+            this.textContent = mode === 'dark' ? '☀️' : '🌙';
+            localStorage.setItem('mode', mode);
+        };
+
+        // ==================== 弹窗功能 ====================
+        function openUpload() {
+            document.getElementById('uploadModal').classList.add('show');
+            resetUploadModal();
+        }
+        function openClean() {
+            document.getElementById('cleanModal').classList.add('show');
+        }
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+        }
+
+        // ==================== 修复：文件上传功能 ====================
+        function initUploadModal() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            
+            // 点击上传区域触发文件选择
+            uploadArea.addEventListener('click', function(e) {
+                if (e.target !== fileInput) {
+                    fileInput.click();
+                }
+            });
+            
+            // 拖拽事件
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function() {
+                this.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            // 文件选择事件
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+        }
+
+        function handleFiles(files) {
+            for (let file of files) {
+                selectedFiles.push({
+                    name: file.name,
+                    size: formatFileSize(file.size),
+                    file: file
+                });
+            }
+            renderFilePreview();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const iconMap = {
+                'doc': '📄', 'docx': '📄',
+                'xls': '📊', 'xlsx': '📊',
+                'ppt': '📊', 'pptx': '📊',
+                'pdf': '📕',
+                'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️', 'psd': '🖼️',
+                'mp4': '🎥', 'avi': '🎥', 'mov': '🎥',
+                'mp3': '🎵', 'wav': '🎵',
+                'zip': '📦', 'rar': '📦', '7z': '📦',
+                'js': '💻', 'html': '💻', 'css': '💻', 'py': '💻',
+                'txt': '📝'
+            };
+            return iconMap[ext] || '📎';
+        }
+
+        function renderFilePreview() {
+            const list = document.getElementById('filePreviewList');
+            if (selectedFiles.length === 0) {
+                list.innerHTML = '';
+                return;
+            }
+            
+            list.innerHTML = selectedFiles.map((f, index) => `
+                <div class="file-preview-item">
+                    <span class="file-preview-icon">${getFileIcon(f.name)}</span>
+                    <div class="file-preview-info">
+                        <div class="file-preview-name">${f.name}</div>
+                        <div class="file-preview-size">${f.size}</div>
+                    </div>
+                    <button class="file-preview-remove" onclick="removeFile(${index})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            renderFilePreview();
+        }
+
+        function resetUploadModal() {
+            selectedFiles = [];
+            renderFilePreview();
+            document.getElementById('fileInput').value = '';
+            document.getElementById('uploadProgress').classList.remove('show');
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressPercent').textContent = '0%';
+        }
+
+        function confirmUpload() {
+            if (selectedFiles.length === 0) {
+                alert('请先选择文件');
+                return;
+            }
+            
+            // 显示进度条
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            progressDiv.classList.add('show');
+            
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += Math.random() * 15 + 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // 上传完成，添加到最近文件
+                    setTimeout(function() {
+                        selectedFiles.forEach(f => {
+                            recentFilesData.unshift({
+                                name: f.name,
+                                icon: getFileIcon(f.name),
+                                size: f.size
+                            });
+                        });
+                        
+                        // 更新存储空间显示（模拟）
+                        updateStorage();
+                        
+                        // 更新仪表盘最近文件列表
+                        updateRecentFilesDisplay();
+                        
+                        closeModal();
+                        alert(`成功上传 ${selectedFiles.length} 个文件！`);
+                    }, 500);
+                }
+                progressFill.style.width = progress + '%';
+                progressPercent.textContent = Math.round(progress) + '%';
+            }, 200);
+        }
+
+        function updateRecentFilesDisplay() {
+            const recentList = document.getElementById('recent-files');
+            if (recentList) {
+                recentList.innerHTML = recentFilesData.slice(0, 4).map(f => `
+                    <div class="file-item">
+                        <span>${f.icon}</span>
+                        <div style="flex:1">
+                            <div>${f.name}</div>
+                            <div style="font-size:12px;color:var(--text-secondary)">${f.size}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function updateStorage() {
+            const used = recentFilesData.length * 0.5 + 2.0;
+            const percent = Math.min((used / 10) * 100, 100);
+            document.getElementById('storage-used').textContent = used.toFixed(1) + 'GB / 10GB';
+            document.getElementById('storage-fill').style.width = percent + '%';
+        }
+
+        // 点击模态框遮罩关闭
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

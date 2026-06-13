@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智慧宿舍管理系统【终极版】</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4361ee',
+            success: '#10b981',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            info: '#06b6d4',
+            purple: '#8b5cf6',
+            light: '#f8fafc'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            lotteryRoll: {
+              '0%': { transform: 'translateY(0)' },
+              '100%': { transform: 'translateY(-10px)' }
+            }
+          },
+          animation: {
+            fadeIn: 'fadeIn 0.4s ease forwards',
+            lotteryRoll: 'lotteryRoll 0.15s linear infinite alternate',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .glass {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(12px);
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+      }
+      .btn-gradient {
+        @apply bg-gradient-to-r from-primary to-purple text-white transition-all hover:shadow-lg;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
+
+  <!-- 登录界面 -->
+  <div id="loginPanel" class="fixed inset-0 flex items-center justify-center z-50">
+    <div class="glass w-full max-w-md rounded-3xl shadow-2xl p-8 animate-fadeIn">
+      <div class="text-center mb-6">
+        <i class="fa fa-building text-primary text-4xl mb-3"></i>
+        <h2 class="text-2xl font-bold bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent">管理员登录</h2>
+        <p class="text-gray-500 mt-2">请输入账号密码进入系统</p>
+      </div>
+      
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-gray-600 mb-2 font-medium">管理员账号</label>
+          <input type="text" id="loginUsername" placeholder="请输入账号" required 
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-2 font-medium">登录密码</label>
+          <input type="password" id="loginPassword" placeholder="请输入密码" required 
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+        </div>
+        <p id="loginTip" class="text-danger text-sm text-center hidden">账号或密码错误！</p>
+        <button type="submit" class="btn-gradient w-full py-3 rounded-xl font-medium">
+          登录系统
+        </button>
+        <p class="text-center text-gray-500 text-sm">
+          没有账号？<span onclick="switchToRegister()" class="text-primary cursor-pointer">立即注册</span>
+        </p>
+        <p class="text-center text-gray-400 text-xs"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- 注册界面 (默认隐藏) -->
+  <div id="registerPanel" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="glass w-full max-w-md rounded-3xl shadow-2xl p-8 animate-fadeIn">
+      <div class="text-center mb-6">
+        <i class="fa fa-user-plus text-purple text-4xl mb-3"></i>
+        <h2 class="text-2xl font-bold bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent">账号注册</h2>
+        <p class="text-gray-500 mt-2">创建管理员账号</p>
+      </div>
+      
+      <form id="registerForm" class="space-y-4">
+        <div>
+          <label class="block text-gray-600 mb-2 font-medium">管理员账号</label>
+          <input type="text" id="regUsername" placeholder="请输入账号" required 
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-2 font-medium">设置密码</label>
+          <input type="password" id="regPassword" placeholder="请输入密码" required 
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-2 font-medium">确认密码</label>
+          <input type="password" id="regRepassword" placeholder="请再次输入密码" required 
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+        </div>
+        <p id="regTip" class="text-danger text-sm text-center hidden">注册提示信息</p>
+        <button type="submit" class="btn-gradient w-full py-3 rounded-xl font-medium">
+          立即注册
+        </button>
+        <p class="text-center text-gray-500 text-sm">
+          已有账号？<span onclick="switchToLogin()" class="text-primary cursor-pointer">返回登录</span>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- 主系统界面 (默认隐藏) -->
+  <div id="mainPanel" class="hidden">
+    <!-- 顶部导航 -->
+    <header class="glass sticky top-0 z-50 shadow-sm">
+      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <i class="fa fa-building text-primary text-3xl"></i>
+          <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent">智慧宿舍管理系统</h1>
+        </div>
+        <div class="flex items-center gap-5">
+          <span class="text-gray-700 font-medium"><i class="fa fa-user-circle mr-1"></i> 管理员</span>
+          <button onclick="logout()" class="text-danger hover:text-danger/70 transition-colors">
+            <i class="fa fa-sign-out mr-1"></i> 退出登录
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 animate-fadeIn">
+      <!-- 统计面板 -->
+      <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div class="glass rounded-2xl p-6 shadow-md card-hover border-l-4 border-primary">
+          <h3 class="text-gray-500 text-sm">总宿舍数</h3>
+          <p class="text-3xl font-bold text-gray-800 mt-2" id="totalDorm">20</p>
+        </div>
+        <div class="glass rounded-2xl p-6 shadow-md card-hover border-l-4 border-success">
+          <h3 class="text-gray-500 text-sm">已入住</h3>
+          <p class="text-3xl font-bold text-gray-800 mt-2" id="occupied">0</p>
+        </div>
+        <div class="glass rounded-2xl p-6 shadow-md card-hover border-l-4 border-gray">
+          <h3 class="text-gray-500 text-sm">空床位</h3>
+          <p class="text-3xl font-bold text-gray-800 mt-2" id="empty">0</p>
+        </div>
+        <div class="glass rounded-2xl p-6 shadow-md card-hover border-l-4 border-warning">
+          <h3 class="text-gray-500 text-sm">标记/故障</h3>
+          <p class="text-3xl font-bold text-gray-800 mt-2" id="fault">0</p>
+        </div>
+      </section>
+
+      <!-- 抽奖抽签模块 -->
+      <section class="glass rounded-2xl p-6 shadow-md mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+          <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <i class="fa fa-trophy text-purple"></i> 智能抽奖抽签
+          </h2>
+          <div class="flex flex-wrap gap-3 items-center">
+            <input type="number" id="lotteryNum" min="1" value="1" class="w-20 px-3 py-2 border border-gray-200 rounded-xl text-center" placeholder="人数">
+            <button onclick="startLottery()" class="btn-gradient px-4 py-2 rounded-xl">
+              开始抽签
+            </button>
+            <button onclick="resetLottery()" class="bg-gray-200 px-4 py-2 rounded-xl text-gray-700">
+              重置抽奖
+            </button>
+          </div>
+        </div>
+        <div id="lotteryResult" class="min-h-[100px] flex items-center justify-center text-center mb-4">
+          <p class="text-gray-500">输入抽取人数，点击开始抽签</p>
+        </div>
+        <div class="border-t border-gray-100 pt-4">
+          <h3 class="text-sm font-medium text-gray-600 mb-2">📝 抽签历史</h3>
+          <div id="lotteryHistory" class="text-sm text-gray-500 max-h-20 overflow-y-auto">
+            暂无记录
+          </div>
+        </div>
+      </section>
+
+      <!-- 搜索操作栏 -->
+      <section class="glass rounded-2xl p-5 shadow-md mb-8 flex flex-col md:flex-row gap-4 justify-between">
+        <div class="flex flex-1 max-w-md">
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="搜索姓名/学号/宿舍号/标记..." 
+            class="w-full px-4 py-3 border border-gray-200 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+          <button onclick="searchStudent()" class="btn-gradient px-4 rounded-r-xl">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+        <div class="flex gap-3 flex-wrap">
+          <button onclick="openAddModal()" class="btn-gradient px-4 py-2 rounded-xl flex items-center gap-2">
+            <i class="fa fa-plus"></i> 新增入住
+          </button>
+          <button onclick="refreshTable()" class="bg-gray-200 px-4 py-2 rounded-xl text-gray-700">
+            <i class="fa fa-refresh"></i> 刷新
+          </button>
+        </div>
+      </section>
+
+      <!-- 数据表格 -->
+      <section class="glass rounded-2xl p-6 shadow-md overflow-x-auto">
+        <table class="w-full min-w-[900px]">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="py-4 px-4 text-left text-gray-700 font-semibold">序号</th>
+              <th class="py-4 px-4 text-left text-gray-700 font-semibold">学生姓名</th>
+              <th class="py-4 px-4 text-left text-gray-700 font-semibold">学号</th>
+              <th class="py-4 px-4 text-left text-gray-700 font-semibold">宿舍号</th>
+              <th class="py-4 px-4 text-left text-gray-700 font-semibold">状态</th>
+              <th class="py-4 px-4 text-left text-gray-700 font-semibold">人员标记</th>
+              <th class="py-4 px-4 text-left text-gray-700 font-semibold">操作</th>
+            </tr>
+          </thead>
+          <tbody id="studentTable" class="divide-y divide-gray-100">
+            <tr class="text-center text-gray-500">
+              <td colspan="7" class="py-10">暂无入住信息，请新增学生</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <!-- 新增/编辑弹窗 -->
+    <div id="modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+      <div class="glass rounded-2xl w-full max-w-lg p-6 shadow-2xl animate-fadeIn">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-xl font-bold text-gray-800" id="modalTitle">新增入住信息</h2>
+          <button onclick="closeModal()" class="text-gray-500 hover:text-danger transition-colors">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+        <form id="studentForm" class="space-y-4">
+          <input type="hidden" id="editId">
+          <div>
+            <label class="block text-gray-600 mb-2 font-medium">学生姓名</label>
+            <input type="text" id="name" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+          </div>
+          <div>
+            <label class="block text-gray-600 mb-2 font-medium">学号</label>
+            <input type="text" id="studentId" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+          </div>
+          <div>
+            <label class="block text-gray-600 mb-2 font-medium">宿舍号</label>
+            <input type="text" id="dormNo" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+          </div>
+          <div>
+            <label class="block text-gray-600 mb-2 font-medium">床位号</label>
+            <input type="text" id="bedNo" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+          </div>
+          <div>
+            <label class="block text-gray-600 mb-2 font-medium">入住状态</label>
+            <select id="status" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+              <option value="occupied">已入住</option>
+              <option value="empty">空置</option>
+              <option value="fault">设施故障</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-600 mb-2 font-medium">人员标记</label>
+            <select id="userTag" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50">
+              <option value="none">无标记</option>
+              <option value="excellent">优秀学员</option>
+              <option value="warning">重点关注</option>
+              <option value="leave">请假中</option>
+              <option value="violate">记录</option>
+            </select>
+          </div>
+          <div class="flex justify-end gap-4 pt-2">
+            <button type="button" onclick="closeModal()" class="px-5 py-2 bg-gray-200 rounded-xl text-gray-700">取消</button>
+            <button type="submit" class="btn-gradient px-5 py-2 rounded-xl">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <footer class="text-center py-6 text-gray-500 text-sm mt-10">
+      智慧宿舍管理系统 © 2025
+    </footer>
+  </div>
+
+  <script>
+    // 初始化数据
+    let studentList = JSON.parse(localStorage.getItem('dormStudents')) || [];
+    let drawnStudents = [];
+    let lotteryHistory = [];
+    const totalDorm = 20;
+
+    // ==================== 账号注册/登录核心 ====================
+    // 初始化账号列表（默认管理员）
+    function initUserList() {
+      let users = JSON.parse(localStorage.getItem('adminUsers')) || [];
+      // 默认管理员账号
+      const defaultAdmin = { username: 'zmd', password: '123456' };
+      if (!users.some(u => u.username === defaultAdmin.username)) {
+        users.push(defaultAdmin);
+        localStorage.setItem('adminUsers', JSON.stringify(users));
+      }
+      return users;
+    }
+
+    // 切换面板
+    function switchToRegister() {
+      document.getElementById('loginPanel').classList.add('hidden');
+      document.getElementById('registerPanel').classList.remove('hidden');
+      document.getElementById('regTip').classList.add('hidden');
+    }
+    function switchToLogin() {
+      document.getElementById('registerPanel').classList.add('hidden');
+      document.getElementById('loginPanel').classList.remove('hidden');
+      document.getElementById('loginTip').classList.add('hidden');
+    }
+
+    // 检查登录状态
+    function checkLogin() {
+      const isLogin = localStorage.getItem('adminLogin') === 'true';
+      if (isLogin) {
+        document.getElementById('loginPanel').classList.add('hidden');
+        document.getElementById('registerPanel').classList.add('hidden');
+        document.getElementById('mainPanel').classList.remove('hidden');
+        initSystem();
+      }
+    }
+
+    // 登录提交
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const users = initUserList();
+      const tip = document.getElementById('loginTip');
+
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        localStorage.setItem('adminLogin', 'true');
+        tip.classList.add('hidden');
+        checkLogin();
+      } else {
+        tip.textContent = '账号或密码错误！';
+        tip.classList.remove('hidden');
+      }
+    });
+
+    // 注册提交
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('regUsername').value.trim();
+      const password = document.getElementById('regPassword').value.trim();
+      const repassword = document.getElementById('regRepassword').value.trim();
+      const users = initUserList();
+      const tip = document.getElementById('regTip');
+
+      // 注册验证
+      if (username === '' || password === '') {
+        tip.textContent = '账号和密码不能为空！';
+        tip.classList.remove('hidden');
+        return;
+      }
+      if (password !== repassword) {
+        tip.textContent = '两次输入的密码不一致！';
+        tip.classList.remove('hidden');
+        return;
+      }
+      if (users.some(u => u.username === username)) {
+        tip.textContent = '该账号已存在！';
+        tip.classList.remove('hidden');
+        return;
+      }
+
+      // 注册成功
+      users.push({ username, password });
+      localStorage.setItem('adminUsers', JSON.stringify(users));
+      alert('注册成功！请登录');
+      switchToLogin();
+    });
+
+    // 退出登录
+    function logout() {
+      if (!confirm('确定退出登录吗？')) return;
+      localStorage.removeItem('adminLogin');
+      window.location.reload();
+    }
+
+    // ==================== 系统初始化 ====================
+    function initSystem() {
+      renderTable();
+      updateStats();
+      document.getElementById('studentForm').addEventListener('submit', saveStudent);
+    }
+
+    // Fisher-Yates 真随机洗牌算法
+    function fisherYatesShuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // 抽奖功能
+    function startLottery() {
+      if (studentList.length === 0) {
+        alert('请先添加学生信息！');
+        return;
+      }
+      const num = parseInt(document.getElementById('lotteryNum').value);
+      if (isNaN(num) || num < 1) {
+        alert('请输入有效的抽取人数！');
+        return;
+      }
+      const availableStudents = studentList.filter(s => !drawnStudents.some(d => d.id === s.id));
+      if (availableStudents.length < num) {
+        alert(`剩余可抽人员不足！剩余：${availableStudents.length} 人`);
+        return;
+      }
+
+      const resultBox = document.getElementById('lotteryResult');
+      resultBox.innerHTML = '<div class="animate-lotteryRoll font-bold text-purple text-lg">🎲 抽签中...</div>';
+
+      setTimeout(() => {
+        const shuffled = fisherYatesShuffle(availableStudents);
+        const selected = shuffled.slice(0, num);
+        drawnStudents.push(...selected);
+        lotteryHistory.unshift(selected);
+        if (lotteryHistory.length > 5) lotteryHistory.pop();
+        
+        resultBox.innerHTML = `
+          <div class="text-center">
+            <h3 class="font-bold text-lg text-primary mb-3">🎉 抽签结果</h3>
+            <div class="flex flex-wrap gap-3 justify-center">
+              ${selected.map(s => `
+                <div class="px-5 py-3 bg-purple/10 text-purple rounded-xl font-medium shadow-sm">
+                  ${s.name}<br><span class="text-xs">${s.dormNo}宿舍</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        renderHistory();
+      }, 1000);
+    }
+
+    function renderHistory() {
+      const historyBox = document.getElementById('lotteryHistory');
+      if (lotteryHistory.length === 0) {
+        historyBox.innerHTML = '暂无记录';
+        return;
+      }
+      historyBox.innerHTML = lotteryHistory.map((list, idx) => 
+        `第${idx+1}次：${list.map(s => s.name).join('、')}`
+      ).join('<br>');
+    }
+
+    function resetLottery() {
+      drawnStudents = [];
+      lotteryHistory = [];
+      document.getElementById('lotteryResult').innerHTML = '<p class="text-gray-500">输入抽取人数，点击开始抽签（绝对真随机）</p>';
+      document.getElementById('lotteryHistory').innerHTML = '暂无记录';
+    }
+
+    // ==================== 宿舍管理功能 ====================
+    function renderTable(list = studentList) {
+      const table = document.getElementById('studentTable');
+      if (list.length === 0) {
+        table.innerHTML = `<tr class="text-center text-gray-500"><td colspan="7" class="py-10">暂无入住信息，请新增学生</td></tr>`;
+        return;
+      }
+      table.innerHTML = list.map((item, index) => {
+        const tagClass = getUserTagClass(item.userTag);
+        return `
+        <tr class="${tagClass} hover:bg-blue-50/50 transition-colors">
+          <td class="py-4 px-4">${index + 1}</td>
+          <td class="py-4 px-4 font-medium">${item.name}</td>
+          <td class="py-4 px-4">${item.studentId}</td>
+          <td class="py-4 px-4">${item.dormNo}</td>
+          <td class="py-4 px-4">${getStatusTag(item.status)}</td>
+          <td class="py-4 px-4">${getUserTag(item.userTag)}</td>
+          <td class="py-4 px-4 flex gap-3">
+            <button onclick="editStudent(${item.id})" class="text-primary hover:text-primary/70 transition-colors">
+              <i class="fa fa-pencil"></i>
+            </button>
+            <button onclick="deleteStudent(${item.id})" class="text-danger hover:text-danger/70 transition-colors">
+              <i class="fa fa-trash"></i>
+            </button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function getStatusTag(status) {
+      const tags = {
+        occupied: '<span class="px-2 py-1 bg-success/10 text-success rounded-full text-xs">已入住</span>',
+        empty: '<span class="px-2 py-1 bg-gray/10 text-gray rounded-full text-xs">空置</span>',
+        fault: '<span class="px-2 py-1 bg-danger/10 text-danger rounded-full text-xs">故障</span>'
+      };
+      return tags[status] || tags.empty;
+    }
+
+    function getUserTag(tag) {
+      const tags = {
+        none: '<span class="text-xs text-gray-400">无标记</span>',
+        excellent: '<span class="px-2 py-1 bg-success/10 text-success rounded-full text-xs">优秀学员</span>',
+        warning: '<span class="px-2 py-1 bg-warning/10 text-warning rounded-full text-xs">重点关注</span>',
+        leave: '<span class="px-2 py-1 bg-info/10 text-info rounded-full text-xs">请假中</span>',
+        violate: '<span class="px-2 py-1 bg-danger/10 text-danger rounded-full text-xs">违纪记录</span>'
+      };
+      return tags[tag] || tags.none;
+    }
+
+    function getUserTagClass(tag) {
+      const classes = {
+        none: '',
+        excellent: 'bg-green-50',
+        warning: 'bg-yellow-50',
+        leave: 'bg-blue-50',
+        violate: 'bg-red-50'
+      };
+      return classes[tag] || '';
+    }
+
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = '新增入住信息';
+      document.getElementById('studentForm').reset();
+      document.getElementById('editId').value = '';
+      document.getElementById('modal').classList.remove('hidden');
+    }
+
+    function editStudent(id) {
+      const student = studentList.find(item => item.id === id);
+      if (!student) return;
+      document.getElementById('modalTitle').textContent = '编辑入住信息';
+      document.getElementById('editId').value = student.id;
+      document.getElementById('name').value = student.name;
+      document.getElementById('studentId').value = student.studentId;
+      document.getElementById('dormNo').value = student.dormNo;
+      document.getElementById('bedNo').value = student.bedNo;
+      document.getElementById('status').value = student.status;
+      document.getElementById('userTag').value = student.userTag || 'none';
+      document.getElementById('modal').classList.remove('hidden');
+    }
+
+    function saveStudent(e) {
+      e.preventDefault();
+      const id = document.getElementById('editId').value;
+      const data = {
+        name: document.getElementById('name').value,
+        studentId: document.getElementById('studentId').value,
+        dormNo: document.getElementById('dormNo').value,
+        bedNo: document.getElementById('bedNo').value,
+        status: document.getElementById('status').value,
+        userTag: document.getElementById('userTag').value
+      };
+      if (id) {
+        const index = studentList.findIndex(item => item.id == id);
+        studentList[index] = { ...studentList[index], ...data };
+      } else {
+        data.id = Date.now();
+        studentList.push(data);
+      }
+      localStorage.setItem('dormStudents', JSON.stringify(studentList));
+      closeModal();
+      renderTable();
+      updateStats();
+    }
+
+    function deleteStudent(id) {
+      if (!confirm('确定删除该学生信息吗？')) return;
+      studentList = studentList.filter(item => item.id !== id);
+      drawnStudents = drawnStudents.filter(item => item.id !== id);
+      localStorage.setItem('dormStudents', JSON.stringify(studentList));
+      renderTable();
+      updateStats();
+    }
+
+    function searchStudent() {
+      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+      if (!keyword) { renderTable(); return; }
+      const result = studentList.filter(item => 
+        item.name.toLowerCase().includes(keyword) ||
+        item.studentId.includes(keyword) ||
+        item.dormNo.includes(keyword) ||
+        (item.userTag && item.userTag.toLowerCase().includes(keyword))
+      );
+      renderTable(result);
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    function refreshTable() {
+      document.getElementById('searchInput').value = '';
+      renderTable();
+    }
+
+    function updateStats() {
+      const occupied = studentList.filter(i => i.status === 'occupied').length;
+      const fault = studentList.filter(i => i.status === 'fault' || i.userTag !== 'none').length;
+      const empty = totalDorm * 4 - occupied;
+      document.getElementById('occupied').textContent = occupied;
+      document.getElementById('empty').textContent = empty;
+      document.getElementById('fault').textContent = fault;
+    }
+
+    // 初始化
+    initUserList();
+    checkLogin();
+
+    // 替换为 你的 Cloudflare Worker 地址
+async function request(url, options = {}) {
+  const res = await fetch(`abc.helsuo.qzz.io${url}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options
+  });
+  return await res.json();
+}
+  </script>
+</body>
+</html>

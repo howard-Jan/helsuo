@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网址收藏管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-6xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">🌐 网址收藏管理系统</h1>
+        
+        <!-- 添加区域 -->
+        <div class="bg-white rounded-xl shadow-md p-5 mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">添加新网址</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <input type="text" id="siteName" placeholder="网站名称" class="border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="text" id="siteUrl" placeholder="网站地址 (https://...)" class="border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400">
+                <select id="category" class="border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400">
+                    <option value="">选择分类</option>
+                    <option value="工作学习">工作学习</option>
+                    <option value="开发工具">开发工具</option>
+                    <option value="社交娱乐">社交娱乐</option>
+                    <option value="生活服务">生活服务</option>
+                </select>
+                <button onclick="addSite()" class="bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition font-medium">
+                    <i class="fa fa-plus mr-1"></i> 添加网址
+                </button>
+            </div>
+        </div>
+
+        <!-- 分类筛选 -->
+        <div class="bg-white rounded-xl shadow-md p-4 mb-6 flex flex-wrap gap-2">
+            <span class="py-2 font-medium text-gray-700">筛选分类：</span>
+            <button onclick="filterCategory('all')" class="filter-btn px-3 py-1 rounded-full bg-gray-200 hover:bg-blue-500 hover:text-white transition text-sm" data-filter="all">全部</button>
+            <button onclick="filterCategory('工作学习')" class="filter-btn px-3 py-1 rounded-full bg-gray-200 hover:bg-blue-500 hover:text-white transition text-sm" data-filter="工作学习">工作学习</button>
+            <button onclick="filterCategory('开发工具')" class="filter-btn px-3 py-1 rounded-full bg-gray-200 hover:bg-blue-500 hover:text-white transition text-sm" data-filter="开发工具">开发工具</button>
+            <button onclick="filterCategory('社交娱乐')" class="filter-btn px-3 py-1 rounded-full bg-gray-200 hover:bg-blue-500 hover:text-white transition text-sm" data-filter="社交娱乐">社交娱乐</button>
+            <button onclick="filterCategory('生活服务')" class="filter-btn px-3 py-1 rounded-full bg-gray-200 hover:bg-blue-500 hover:text-white transition text-sm" data-filter="生活服务">生活服务</button>
+        </div>
+
+        <!-- 网址列表 -->
+        <div id="siteList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- 网址卡片会在这里动态生成 -->
+        </div>
+
+        <!-- 最近访问记录 -->
+        <div class="mt-8 bg-white rounded-xl shadow-md p-5">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">最近访问痕迹</h2>
+            <div id="historyList" class="space-y-2 text-gray-600">
+                <p class="text-gray-400 italic">暂无访问记录</p>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // 初始化数据
+    let sites = JSON.parse(localStorage.getItem('bookmarkSites')) || [];
+    let history = JSON.parse(localStorage.getItem('visitHistory')) || [];
+    let currentFilter = 'all';
+
+    // 添加网址
+    function addSite() {
+        const name = document.getElementById('siteName').value.trim();
+        const url = document.getElementById('siteUrl').value.trim();
+        const category = document.getElementById('category').value;
+
+        if (!name || !url || !category) {
+            alert('请填写完整信息！');
+            return;
+        }
+
+        const newSite = {
+            id: Date.now(),
+            name: name,
+            url: url.startsWith('http') ? url : `https://${url}`,
+            category: category,
+            sort: sites.length + 1,
+            visitCount: 0,
+            lastVisit: null
+        };
+
+        sites.push(newSite);
+        saveData();
+        renderSites();
+
+        // 清空输入框
+        document.getElementById('siteName').value = '';
+        document.getElementById('siteUrl').value = '';
+        document.getElementById('category').value = '';
+    }
+
+    // 保存数据到本地存储
+    function saveData() {
+        localStorage.setItem('bookmarkSites', JSON.stringify(sites));
+        localStorage.setItem('visitHistory', JSON.stringify(history));
+    }
+
+    // 访问网址
+    function visitSite(id) {
+        const site = sites.find(s => s.id === id);
+        if (!site) return;
+
+        // 更新访问信息
+        site.visitCount += 1;
+        site.lastVisit = new Date().toISOString();
+        
+        // 添加到访问历史
+        history.unshift({
+            id: site.id,
+            name: site.name,
+            url: site.url,
+            time: site.lastVisit
+        });
+        
+        // 历史只保留最近20条
+        if (history.length > 20) history = history.slice(0, 20);
+        
+        saveData();
+        renderSites();
+        renderHistory();
+        window.open(site.url, '_blank');
+    }
+
+    // 删除网址
+    function deleteSite(id) {
+        if (!confirm('确定要删除这个网址吗？')) return;
+        sites = sites.filter(s => s.id !== id);
+        history = history.filter(h => h.id !== id);
+        saveData();
+        renderSites();
+        renderHistory();
+    }
+
+    // 移动排序位置
+    function moveSite(id, direction) {
+        const index = sites.findIndex(s => s.id === id);
+        if (direction === 'up' && index > 0) {
+            [sites[index], sites[index - 1]] = [sites[index - 1], sites[index]];
+        }
+        if (direction === 'down' && index < sites.length - 1) {
+            [sites[index], sites[index + 1]] = [sites[index + 1], sites[index]];
+        }
+        saveData();
+        renderSites();
+    }
+
+    // 筛选分类
+    function filterCategory(category) {
+        currentFilter = category;
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.dataset.filter === category) {
+                btn.classList.remove('bg-gray-200');
+                btn.classList.add('bg-blue-500', 'text-white');
+            } else {
+                btn.classList.add('bg-gray-200');
+                btn.classList.remove('bg-blue-500', 'text-white');
+            }
+        });
+        renderSites();
+    }
+
+    // 渲染网址列表
+    function renderSites() {
+        const container = document.getElementById('siteList');
+        let filteredSites = sites;
+        
+        if (currentFilter !== 'all') {
+            filteredSites = sites.filter(s => s.category === currentFilter);
+        }
+
+        if (filteredSites.length === 0) {
+            container.innerHTML = '<p class="col-span-full text-center text-gray-400 py-10 italic">暂无收藏网址</p>';
+            return;
+        }
+
+        container.innerHTML = filteredSites.map(site => `
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 hover:shadow-md transition">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-semibold text-lg text-gray-800 truncate pr-2">${site.name}</h3>
+                    <button onclick="deleteSite(${site.id})" class="text-gray-400 hover:text-red-500 transition">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+                <div class="text-xs inline-block px-2 py-1 bg-blue-50 text-blue-600 rounded mb-3">${site.category}</div>
+                <div class="text-xs text-gray-500 mb-3">
+                    访问次数：${site.visitCount}${site.lastVisit ? ` | 上次访问：${formatDate(site.lastVisit)}` : ' | 未访问'}
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="visitSite(${site.id})" class="flex-1 bg-green-500 hover:bg-green-600 text-white rounded py-2 text-sm font-medium transition">
+                        <i class="fa fa-external-link mr-1"></i> 访问
+                    </button>
+                    <div class="flex gap-1">
+                        <button onclick="moveSite(${site.id}, 'up')" class="px-3 bg-gray-100 hover:bg-gray-200 rounded py-2 text-gray-600 transition" title="上移">
+                            <i class="fa fa-arrow-up"></i>
+                        </button>
+                        <button onclick="moveSite(${site.id}, 'down')" class="px-3 bg-gray-100 hover:bg-gray-200 rounded py-2 text-gray-600 transition" title="下移">
+                            <i class="fa fa-arrow-down"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 渲染访问历史
+    function renderHistory() {
+        const container = document.getElementById('historyList');
+        if (history.length === 0) {
+            container.innerHTML = '<p class="text-gray-400 italic">暂无访问记录</p>';
+            return;
+        }
+
+        container.innerHTML = history.map(item => `
+            <a href="${item.url}" target="_blank" class="flex items-center justify-between py-2 border-b last:border-0 hover:bg-gray-50 px-2 rounded transition">
+                <span class="text-gray-700">${item.name}</span>
+                <span class="text-xs text-gray-400">${formatDate(item.time)}</span>
+            </a>
+        `).join('');
+    }
+
+    // 格式化日期
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+
+    // 初始化页面
+    window.onload = function() {
+        renderSites();
+        renderHistory();
+        filterCategory('all');
+    }
+</script>
+</body>
+</html>
